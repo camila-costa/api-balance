@@ -22,7 +22,10 @@ class EventService
 
     public function processEvent(array $data): string
     {
-        switch (isset($data) && isset($data['type'])) {
+        if (!$this->eventValidationService->validateType($data))
+            throw new InvalidRequestException('Invalid fields');
+
+        switch ($data['type']) {
             case EventType::DEPOSIT:
                 return $this->deposit($data);
             case EventType::WITHDRAW:
