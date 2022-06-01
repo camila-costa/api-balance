@@ -63,6 +63,23 @@ class EventService
 
     private function transfer(array $data)
     {
+        $idFrom = $data['origin'];
+        $idTo = $data['destination'];
+
+        $value = $data['value'];
+
+        $balanceFrom = $this->accountService->getBalanceById($idFrom);
+        $balanceTo = $this->accountService->getBalanceById($idTo);
+
+        $newValueFrom = $balanceFrom - $value;
+        $newValueTo = $balanceTo + $value;
+
+        $accountFrom = new Account($idFrom, $newValueFrom);
+        $this->accountService->update($accountFrom);
+
+        $accountTo = new Account($idTo, $newValueTo);
+        $this->accountService->update($accountTo);
+
         return "transfer";
     }
 }
