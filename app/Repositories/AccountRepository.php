@@ -8,33 +8,64 @@ use App\Models\Account;
 class AccountRepository
 {
     protected Database $database;
-    private string $tableName;
+    private string $table;
 
     public function __construct(Database $database)
     {
         $this->database = $database;
-        $this->tableName = 'account';
+        $this->table = 'accounts';
     }
 
     public function save(Account $account): void
     {
-        $this->database->save($account->toArray(), $this->tableName);
+        $sql = "insert into $this->table (id, balance) values (:id, :balance)";
+        $params = [
+            'id' => $account->getId('id'),
+            'balance' => $account->getBalance('balance'),
+        ];
+        try {
+            $this->database->executar($sql, $params);
+        } catch (\Exception $exception) {
+            die("Error during save");
+        }
     }
 
     public function update(Account $account): void
     {
-        $data = $account->toArray();
-        $this->database->update($data, $this->tableName);
+        $sql = "update $this->table set balance = :balance where id = :id";
+        $params = [
+            'id' => $account->getId('id'),
+            'balance' => $account->getBalance('balance')
+        ];
+        try {
+            $this->database->executar($sql, $params);
+        } catch (\Exception $exception) {
+            die("Error during update");
+        }
     }
 
     public function find(string $id): ?Account
     {
-        $result = $this->database->findByField('id', $id, $this->tableName);
+        $sql = "select * from $this->table where id = :id";
+        try {
+            $accounts = $this->toObject($this->database->consultar($sql, ['id' => $id]));
 
-        if (!empty($result) && !empty($result[0])) {
-            return new Account($result[0]['id'], $result[0]['balance']);
+            if (!empty($accounts) && !empty($accounts[0]))
+                return new Account($accounts[0]->getId(), $accounts[0]->getBalance());
+
+            return null;
+        } catch (\Exception $exception) {
+            die("Error during find");
         }
+    }
 
-        return null;
+    private function toObject(array $result): array
+    {
+        $accounts = [];
+        foreach ($result as $linha) {
+            $account = new Account($linha['id'], $linha['balance']);
+            array_push($accounts, $account);
+        }
+        return $accounts;
     }
 }

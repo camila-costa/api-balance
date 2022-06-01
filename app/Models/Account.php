@@ -13,6 +13,11 @@ class Account
         $this->balance = $balance;
     }
 
+    public function getId() :string
+    {
+        return $this->id;
+    }
+
     public function getBalance(): float
     {
         return $this->balance;

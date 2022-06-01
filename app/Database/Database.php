@@ -2,11 +2,47 @@
 
 namespace App\Database;
 
-interface Database
+use PDO;
+
+class Database
 {
-    public function save(array $data, string $table): void;
+    private $conexao;
 
-    public function update(array $data, string $table): void;
+    public function __construct(PDO $pdo)
+    {
+        $this->conexao = $pdo;
+    }
 
-    public function findByField(string $field, string $value, string $table): array;
+    public function executar(string $sql, array $params = [])
+    {
+        $stmt = $this->conexao->prepare($sql);
+        $stmt->execute($params);
+        return $stmt;
+    }
+
+    public function consultar(string $sql, array $params = [])
+    {
+        $result = $this->executar($sql, $params);
+        return $result->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function clearAll(string $table)
+    {
+        $this->executar('truncate table ' . $table);
+    }
+
+    public function beginTransaction()
+    {
+        return $this->conexao->beginTransaction();
+    }
+
+    public function commit()
+    {
+        return $this->conexao->commit();
+    }
+
+    public function rollBack()
+    {
+        return $this->conexao->rollBack();
+    }
 }

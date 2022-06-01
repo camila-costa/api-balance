@@ -32,7 +32,7 @@ class EventService
         }
     }
 
-    private function deposit(array $data, $createAccount = true): string
+    private function deposit(array $data): string
     {
         $id = $data['destination'];
         $value = $data['amount'];
@@ -43,12 +43,8 @@ class EventService
             $account = new Account($id, $value);
             $this->accountService->update($account);
         } catch(NotFoundException $error) {
-            if($createAccount) {
-                $account = new Account($id, $value);
-                $this->accountService->save($account);
-            } else {
-                throw $error;
-            }
+            $account = new Account($id, $value);
+            $this->accountService->save($account);
         }
 
         $response = new DepositEventResponse($id, $value);
@@ -72,7 +68,7 @@ class EventService
     private function transfer(array $data): string
     {
         $withdrawResponse = $this->withdraw(['origin' => $data['origin'], 'amount' => $data['amount']]);
-        $depositResponse = $this->deposit(['destination' => $data['destination'], 'amount' => $data['amount']], false);
+        $depositResponse = $this->deposit(['destination' => $data['destination'], 'amount' => $data['amount']]);
 
         $response = array_merge(json_decode($withdrawResponse, true), json_decode($depositResponse, true));
 

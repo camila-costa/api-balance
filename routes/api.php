@@ -2,6 +2,7 @@
 
 use App\Controllers\AccountController;
 use App\Controllers\EventController;
+use App\Database\Database;
 use App\Database\InMemory;
 use App\Repositories\AccountRepository;
 use App\Services\AccountService;
@@ -16,7 +17,13 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $container = new Container();
 
-$database = InMemory::getInstance();
+$dns = 'mysql:host=localhost;dbname=apibalance';
+$usuario = 'root';
+$senha = '';
+
+$pdo = new PDO($dns, $usuario, $senha);
+
+$database = new Database($pdo);
 $repository = new AccountRepository($database);
 $service = new AccountService($repository);
 
@@ -32,8 +39,8 @@ $container->set(EventController::class, function (ContainerInterface $container)
 $app = AppFactory::createFromContainer($container);
 $app->addBodyParsingMiddleware();
 
-$app->post('/reset', function (Request $request, Response $response, array $args) {
-    session_unset();
+$app->post('/reset', function (Request $request, Response $response, array $args) use ($database) {
+    $database->clearAll('accounts');
     $response->getBody()->write('OK');
     return $response->withStatus(200);
 });
