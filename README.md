@@ -27,6 +27,12 @@ CREATE TABLE accounts (
 
 ```
 
+### Tests
+
+````
+./vendor/bin/phpunit --verbose tests
+````
+
 ## Endpoints
 
 - GET /balance?account_id
