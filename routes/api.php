@@ -1,9 +1,11 @@
 <?php
 
 use App\Controllers\AccountController;
+use App\Controllers\EventController;
 use App\Database\InMemory;
 use App\Repositories\AccountRepository;
 use App\Services\AccountService;
+use App\Services\EventService;
 use DI\Container;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -22,8 +24,15 @@ $container->set(AccountController::class, function (ContainerInterface $containe
     return new AccountController($service);
 });
 
+$container->set(EventController::class, function (ContainerInterface $container) use ($service) {
+    $eventService = new EventService($service);
+    return new EventController($eventService);
+});
+
 $app = AppFactory::createFromContainer($container);
+$app->addBodyParsingMiddleware();
 
 $app->get('/balance', AccountController::class . ':getBalance');
+$app->post('/event', EventController::class . ':newEvent');
 
 return $app;
