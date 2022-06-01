@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Exceptions\NotFoundException;
 use App\Models\Account;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -30,15 +31,15 @@ class AccountController
         /* $account = new Account("1", 10);
         $this->service->save($account); */
 
-        $balance = $this->service->getBalanceById($id);
+        try {
+            $balance = $this->service->getBalanceById($id);
 
-        if(is_null($balance))
-            return $response->withStatus(404);
-
-        $response->getBody()->write(
-            (string) $balance
-        );
-
-        return $response->withStatus(200);
+            $response->getBody()->write(
+                (string) $balance
+            );
+            return $response->withStatus(200);
+        } catch (NotFoundException $error) {
+            return $response->withStatus($error->getCode());
+        }
     }
 }

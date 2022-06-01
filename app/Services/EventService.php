@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\EventType;
+use App\Exceptions\InvalidRequestException;
 use App\Models\Account;
 
 class EventService
@@ -24,8 +25,7 @@ class EventService
             case EventType::TRANSFER:
                 return $this->transfer($data);
             default:
-                # code...
-                break;
+                throw new InvalidRequestException('Invalid event type');
         }
     }
 

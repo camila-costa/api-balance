@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Exceptions\InvalidRequestException;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 use App\Services\EventService;
@@ -19,13 +20,14 @@ class EventController
     {
         $body = $request->getParsedBody();
 
-        $result = $this->service->processEvent($body);
+        try {
+            $result = $this->service->processEvent($body);
 
-        $response->getBody()->write(
-            $result
-        );
-
-        return $response
-            ->withStatus(200);
+            $response->getBody()->write($result);
+            return $response->withStatus(200);
+        } catch(InvalidRequestException $error) {
+            $response->getBody()->write($error->getMessage());
+            return $response->withStatus($error->getCode());
+        }
     }
 }
