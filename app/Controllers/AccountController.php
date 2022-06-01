@@ -22,14 +22,10 @@ class AccountController
     {
         $params = $request->getQueryParams();
         if(!isset($params['account_id'])) {
-            return $response
-                ->withStatus(404);
+            return $response->withStatus(404);
         }
 
         $id = $params['account_id'];
-
-        /* $account = new Account("1", 10);
-        $this->service->save($account); */
 
         try {
             $balance = $this->service->getBalanceById($id);

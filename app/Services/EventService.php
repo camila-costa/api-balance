@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventType;
 use App\Exceptions\InvalidRequestException;
+use App\Exceptions\NotFoundException;
 use App\Models\Account;
 
 class EventService
@@ -31,7 +32,20 @@ class EventService
 
     private function deposit(array $data)
     {
-        return "deposit";
+        $id = $data['destination'];
+        $value = $data['value'];
+
+        try {
+            $balance = $this->accountService->getBalanceById($id);
+            $value += $balance;
+            $account = new Account($id, $value);
+            $this->accountService->update($account);
+        } catch(NotFoundException $error) {
+            $account = new Account($id, $data['value']);
+            $this->accountService->save($account);
+        }
+
+        return "deposit ";
     }
 
     private function withdraw(array $data)

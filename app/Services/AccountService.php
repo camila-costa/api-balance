@@ -29,4 +29,9 @@ class AccountService
     {
         $this->repository->save($account);
     }
+
+    public function update(Account $account): void
+    {
+        $this->repository->update($account);
+    }
 }

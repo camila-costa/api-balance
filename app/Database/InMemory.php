@@ -7,24 +7,11 @@ use App\Database\Database;
 class InMemory implements Database
 {
     private static InMemory $instance;
-    private static array $data = [];
-
-    private function __construct()
-    {
-    }
-
-    protected function __clone()
-    {
-    }
-
-    public function __wakeup()
-    {
-        throw new \Exception("Cannot unserialize a singleton.");
-    }
 
     public static function getInstance(): InMemory
     {
         if (!isset(self::$instance)) {
+            session_start();
             self::$instance = new InMemory();
         }
 
@@ -33,30 +20,28 @@ class InMemory implements Database
 
     public function save(array $data, string $table): void
     {
-        self::$data[$table][] = $data;
+        if(!isset($_SESSION[$table]) || !in_array($data, $_SESSION[$table]))
+            $_SESSION[$table][] = $data;
     }
 
     public function update(array $data, string $table): void
     {
-        $id = $data['id'];
-        unset($data['id']);
-        self::$data[$table][$id] = $data;
-    }
-
-    public function find(string $id, string $table): array
-    {
-        return self::$data[$table][$id] ?? [];
+        foreach ($_SESSION[$table] as $key => $row) {
+            if ($row['id'] == $data['id']) {
+                $_SESSION[$table][$key] = $data;
+            }
+        }
     }
 
     public function findByField(string $field, string $value, string $table): array
     {
         $result = [];
 
-        if (!isset(self::$data[$table])) {
+        if (!isset($_SESSION[$table])) {
             return $result;
         }
 
-        foreach (self::$data[$table] as $data) {
+        foreach ($_SESSION[$table] as $data) {
             if ($data[$field] == $value) {
                 array_push($result, $data);
             }
@@ -64,9 +49,4 @@ class InMemory implements Database
 
         return $result;
     }
-
-    /* public function clear(): void
-    {
-        self::$data = [];
-    } */
 }
