@@ -35,6 +35,7 @@ class AccountController
             );
             return $response->withStatus(200);
         } catch (NotFoundException $error) {
+            $response->getBody()->write($error->getMessage());
             return $response->withStatus($error->getCode());
         }
     }

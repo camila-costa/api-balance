@@ -35,7 +35,7 @@ class EventService
     private function deposit(array $data, $createAccount = true): string
     {
         $id = $data['destination'];
-        $value = $data['value'];
+        $value = $data['amount'];
 
         try {
             $balance = $this->accountService->getBalanceById($id);
@@ -58,7 +58,7 @@ class EventService
     private function withdraw(array $data): string
     {
         $id = $data['origin'];
-        $value = $data['value'];
+        $value = $data['amount'];
 
         $balance = $this->accountService->getBalanceById($id);
         $value = $balance - $value;
@@ -71,8 +71,8 @@ class EventService
 
     private function transfer(array $data): string
     {
-        $withdrawResponse = $this->withdraw(['origin' => $data['origin'], 'value' => $data['value']]);
-        $depositResponse = $this->deposit(['destination' => $data['destination'], 'value' => $data['value']], false);
+        $withdrawResponse = $this->withdraw(['origin' => $data['origin'], 'amount' => $data['amount']]);
+        $depositResponse = $this->deposit(['destination' => $data['destination'], 'amount' => $data['amount']], false);
 
         $response = array_merge(json_decode($withdrawResponse, true), json_decode($depositResponse, true));
 

@@ -25,7 +25,7 @@ class EventController
             $result = $this->service->processEvent($body);
 
             $response->getBody()->write($result);
-            return $response->withStatus(200);
+            return $response->withStatus(201);
         } catch(InvalidRequestException | NotFoundException $error) {
             $response->getBody()->write($error->getMessage());
             return $response->withStatus($error->getCode());

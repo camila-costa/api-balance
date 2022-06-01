@@ -32,6 +32,12 @@ $container->set(EventController::class, function (ContainerInterface $container)
 $app = AppFactory::createFromContainer($container);
 $app->addBodyParsingMiddleware();
 
+$app->post('/reset', function (Request $request, Response $response, array $args) {
+    session_unset();
+    $response->getBody()->write('OK');
+    return $response->withStatus(200);
+});
+
 $app->get('/balance', AccountController::class . ':getBalance');
 $app->post('/event', EventController::class . ':newEvent');
 
