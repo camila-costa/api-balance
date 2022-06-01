@@ -45,12 +45,20 @@ class EventService
             $this->accountService->save($account);
         }
 
-        return "deposit ";
+        return "deposit";
     }
 
     private function withdraw(array $data)
     {
-       return "withdraw";
+        $id = $data['origin'];
+        $value = $data['value'];
+
+        $balance = $this->accountService->getBalanceById($id);
+        $value = $balance - $value;
+        $account = new Account($id, $value);
+        $this->accountService->update($account);
+
+        return "withdraw";
     }
 
     private function transfer(array $data)
