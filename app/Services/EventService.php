@@ -34,7 +34,7 @@ class EventService
         }
     }
 
-    private function deposit(array $data): string
+    public function deposit(array $data): string
     {
         if (!$this->eventValidationService->validateDeposit($data))
             throw new InvalidRequestException('Invalid fields');
@@ -56,7 +56,7 @@ class EventService
         return $response->response();
     }
 
-    private function withdraw(array $data): string
+    public function withdraw(array $data): string
     {
         if (!$this->eventValidationService->validateWithdraw($data))
             throw new InvalidRequestException('Invalid fields');
@@ -73,8 +73,11 @@ class EventService
         return $response->response();
     }
 
-    private function transfer(array $data): string
+    public function transfer(array $data): string
     {
+        if (!$this->eventValidationService->validateTransfer($data))
+            throw new InvalidRequestException('Invalid fields');
+
         $withdrawResponse = $this->withdraw($data);
         $depositResponse = $this->deposit($data);
 
