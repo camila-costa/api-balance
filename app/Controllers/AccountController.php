@@ -22,7 +22,7 @@ class AccountController
     {
         $params = $request->getQueryParams();
         if(!isset($params['account_id'])) {
-            return $response->withStatus(404);
+            return $response->withStatus(422);
         }
 
         $id = $params['account_id'];

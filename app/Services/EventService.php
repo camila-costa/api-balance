@@ -22,7 +22,7 @@ class EventService
 
     public function processEvent(array $data): string
     {
-        switch ($data['type']) {
+        switch (isset($data) && isset($data['type'])) {
             case EventType::DEPOSIT:
                 return $this->deposit($data);
             case EventType::WITHDRAW:
@@ -78,7 +78,10 @@ class EventService
         $withdrawResponse = $this->withdraw($data);
         $depositResponse = $this->deposit($data);
 
-        $response = array_merge(json_decode($withdrawResponse, true), json_decode($depositResponse, true));
+        $response = array_merge(
+            json_decode($withdrawResponse, true),
+            json_decode($depositResponse, true)
+        );
 
         return json_encode($response);
     }
