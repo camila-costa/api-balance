@@ -6,6 +6,7 @@ use App\Database\Database;
 use App\Repositories\AccountRepository;
 use App\Services\AccountService;
 use App\Services\EventService;
+use App\Services\EventValidationService;
 use DI\Container;
 use Psr\Container\ContainerInterface;
 
@@ -19,7 +20,8 @@ $container->set(AccountController::class, function (ContainerInterface $containe
 });
 
 $container->set(EventController::class, function (ContainerInterface $container) use ($service) {
-    $eventService = new EventService($service);
+    $eventValidationService = new EventValidationService();
+    $eventService = new EventService($service, $eventValidationService);
     return new EventController($eventService);
 });
 

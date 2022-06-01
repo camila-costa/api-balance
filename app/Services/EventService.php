@@ -12,10 +12,12 @@ use App\Responses\WithdrawEventResponse;
 class EventService
 {
     private AccountService $accountService;
+    private EventValidationService $eventValidationService;
 
-    public function __construct(AccountService $accountService)
+    public function __construct(AccountService $accountService, EventValidationService $eventValidationService)
     {
         $this->accountService = $accountService;
+        $this->eventValidationService = $eventValidationService;
     }
 
     public function processEvent(array $data): string
@@ -34,6 +36,9 @@ class EventService
 
     private function deposit(array $data): string
     {
+        if (!$this->eventValidationService->validateDeposit($data))
+            throw new InvalidRequestException('Invalid fields');
+        
         $id = $data['destination'];
         $value = $data['amount'];
 
@@ -53,6 +58,9 @@ class EventService
 
     private function withdraw(array $data): string
     {
+        if (!$this->eventValidationService->validateWithdraw($data))
+            throw new InvalidRequestException('Invalid fields');
+
         $id = $data['origin'];
         $value = $data['amount'];
 
@@ -67,8 +75,8 @@ class EventService
 
     private function transfer(array $data): string
     {
-        $withdrawResponse = $this->withdraw(['origin' => $data['origin'], 'amount' => $data['amount']]);
-        $depositResponse = $this->deposit(['destination' => $data['destination'], 'amount' => $data['amount']]);
+        $withdrawResponse = $this->withdraw($data);
+        $depositResponse = $this->deposit($data);
 
         $response = array_merge(json_decode($withdrawResponse, true), json_decode($depositResponse, true));
 
