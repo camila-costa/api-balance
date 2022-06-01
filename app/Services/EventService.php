@@ -6,6 +6,8 @@ use App\Enums\EventType;
 use App\Exceptions\InvalidRequestException;
 use App\Exceptions\NotFoundException;
 use App\Models\Account;
+use App\Responses\DepositEventResponse;
+use App\Responses\WithdrawEventResponse;
 
 class EventService
 {
@@ -16,7 +18,7 @@ class EventService
         $this->accountService = $accountService;
     }
 
-    public function processEvent(array $data)
+    public function processEvent(array $data): string
     {
         switch ($data['type']) {
             case EventType::DEPOSIT:
@@ -30,7 +32,7 @@ class EventService
         }
     }
 
-    private function deposit(array $data)
+    private function deposit(array $data, $createAccount = true): string
     {
         $id = $data['destination'];
         $value = $data['value'];
@@ -41,14 +43,19 @@ class EventService
             $account = new Account($id, $value);
             $this->accountService->update($account);
         } catch(NotFoundException $error) {
-            $account = new Account($id, $data['value']);
-            $this->accountService->save($account);
+            if($createAccount) {
+                $account = new Account($id, $value);
+                $this->accountService->save($account);
+            } else {
+                throw $error;
+            }
         }
 
-        return "deposit";
+        $response = new DepositEventResponse($id, $value);
+        return $response->response();
     }
 
-    private function withdraw(array $data)
+    private function withdraw(array $data): string
     {
         $id = $data['origin'];
         $value = $data['value'];
@@ -58,28 +65,17 @@ class EventService
         $account = new Account($id, $value);
         $this->accountService->update($account);
 
-        return "withdraw";
+        $response = new WithdrawEventResponse($id, $value);
+        return $response->response();
     }
 
-    private function transfer(array $data)
+    private function transfer(array $data): string
     {
-        $idFrom = $data['origin'];
-        $idTo = $data['destination'];
+        $withdrawResponse = $this->withdraw(['origin' => $data['origin'], 'value' => $data['value']]);
+        $depositResponse = $this->deposit(['destination' => $data['destination'], 'value' => $data['value']], false);
 
-        $value = $data['value'];
+        $response = array_merge(json_decode($withdrawResponse, true), json_decode($depositResponse, true));
 
-        $balanceFrom = $this->accountService->getBalanceById($idFrom);
-        $balanceTo = $this->accountService->getBalanceById($idTo);
-
-        $newValueFrom = $balanceFrom - $value;
-        $newValueTo = $balanceTo + $value;
-
-        $accountFrom = new Account($idFrom, $newValueFrom);
-        $this->accountService->update($accountFrom);
-
-        $accountTo = new Account($idTo, $newValueTo);
-        $this->accountService->update($accountTo);
-
-        return "transfer";
+        return json_encode($response);
     }
 }
